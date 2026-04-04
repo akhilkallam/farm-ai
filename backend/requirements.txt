@@ -1,0 +1,51 @@
+# ============================================================
+# FarmAI Backend — Python Dependencies
+# ============================================================
+# Install: pip install -r requirements.txt
+
+# ── Core Framework ──────────────────────────────────────────
+fastapi==0.115.0          # Web API framework
+uvicorn[standard]==0.30.0  # ASGI server
+pydantic==2.7.0            # Data validation
+pydantic-settings==2.3.0   # Settings management from .env
+
+# ── MCP (Model Context Protocol) ────────────────────────────
+# This is the KEY library for MCP!
+# FastMCP makes building MCP servers super easy
+mcp==1.3.0                 # Official MCP Python SDK
+fastmcp==2.3.3             # Higher-level MCP server builder
+
+# ── LLM / Anthropic ─────────────────────────────────────────
+anthropic==0.49.0          # Anthropic Python SDK (Claude API)
+langchain==0.3.0           # LLM orchestration framework
+langchain-anthropic==0.3.0 # LangChain + Claude integration
+langchain-community==0.3.0 # Community integrations (loaders etc)
+
+# ── RAG: Vector Store ────────────────────────────────────────
+langchain-postgres==0.0.12  # pgvector integration
+psycopg[binary]==3.1.19    # PostgreSQL async driver
+pgvector==0.3.2            # pgvector Python client
+
+# ── RAG: Document Loading & Chunking ────────────────────────
+pypdf==4.3.0               # PDF loader
+unstructured==0.15.0       # Multi-format doc loader
+tiktoken==0.7.0            # Token counting for chunking
+
+# ── Multi-Agent: LangGraph ───────────────────────────────────
+# LangGraph is what powers our supervisor + specialist agents
+langgraph==0.2.0           # Graph-based agent orchestration
+langgraph-checkpoint-postgres==2.0.0  # Persist agent state in Postgres
+
+# ── Caching & Memory ────────────────────────────────────────
+redis==5.0.0               # Redis client
+aioredis==2.0.1            # Async Redis
+
+# ── HTTP Client (for calling external APIs in tools) ─────────
+httpx==0.27.0              # Async HTTP client
+aiohttp==3.10.0
+
+# ── Utilities ───────────────────────────────────────────────
+python-dotenv==1.0.0       # Load .env files
+python-multipart==0.0.9    # File upload handling
+Pillow==10.4.0             # Image processing for pest detection
+structlog==24.2.0          # Structured logging

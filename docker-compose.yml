@@ -1,0 +1,121 @@
+version: "3.9"
+
+# ============================================================
+# FarmAI — Docker Compose
+# ============================================================
+# Start everything: docker-compose up -d
+# Stop everything:  docker-compose down
+# View logs:        docker-compose logs -f api
+#
+# 📖 SERVICES EXPLAINED:
+#   postgres  — Database (farmer profiles + pgvector for RAG)
+#   redis     — Cache (rate limiting + session state)
+#   mcp-server — MCP tool server (weather, prices, soil, schemes)
+#   api        — FastAPI backend (agents + RAG)
+#   frontend   — Next.js farmer UI
+# ============================================================
+
+services:
+
+  # ── PostgreSQL + pgvector ───────────────────────────────────
+  # pgvector/pgvector:pg16 is an official image with pgvector pre-installed.
+  # Regular postgres image does NOT have pgvector — this matters!
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: farmai-postgres
+    environment:
+      POSTGRES_DB: farmai
+      POSTGRES_USER: farmai
+      POSTGRES_PASSWORD: farmai123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U farmai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: farmai-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 3
+
+  # ── MCP Server ──────────────────────────────────────────────
+  # 📖 NOTE: This runs SEPARATELY from the API.
+  # The MCP server is an independent process that:
+  # - Listens for tool calls via SSE on port 8001
+  # - Can be connected by Claude Desktop directly (without your app!)
+  # - Any MCP-compatible client can use these tools
+  mcp-server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: farmai-mcp
+    command: python mcp/server.py
+    ports:
+      - "8001:8001"
+    env_file: .env
+    environment:
+      - MCP_SERVER_PORT=8001
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      retries: 3
+
+  # ── FastAPI Backend ─────────────────────────────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: farmai-api
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8001/sse  # Internal Docker network URL
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mcp-server:
+        condition: service_started
+    volumes:
+      - ./backend:/app  # Hot reload — code changes reflect immediately
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      retries: 3
+
+  # ── Next.js Frontend ────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: farmai-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    driver: local
