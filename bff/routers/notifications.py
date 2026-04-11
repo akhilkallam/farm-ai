@@ -27,6 +27,10 @@ class RegisterDeviceRequest(BaseModel):
 def register_device(body: RegisterDeviceRequest):
     """Store device push token in Redis. Key: device_tokens:{farmer_id}."""
     redis = get_redis_client()
-    redis.hset(f"device_tokens:{body.farmer_id}", body.platform, body.device_token)
-    redis.expire(f"device_tokens:{body.farmer_id}", TOKEN_TTL_SECONDS)
+    key = f"device_tokens:{body.farmer_id}"
+    # Use pipeline to make hset + expire atomic
+    with redis.pipeline() as pipe:
+        pipe.hset(key, body.platform, body.device_token)
+        pipe.expire(key, TOKEN_TTL_SECONDS)
+        pipe.execute()
     return {"message": "Device registered"}
