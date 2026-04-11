@@ -32,7 +32,7 @@ async def _audio_cleanup_loop():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     cleanup_task = asyncio.create_task(_audio_cleanup_loop())
-    logger.info(f"Farm-AI BFF starting on port {settings.bff_port}")
+    logger.info("Farm-AI BFF starting on port %s", settings.bff_port)
     yield
     cleanup_task.cancel()
 
