@@ -17,21 +17,20 @@ logger = logging.getLogger(__name__)
 async def _audio_cleanup_loop():
     """Delete audio files older than audio_ttl_hours every hour."""
     while True:
-        await asyncio.sleep(3600)
         try:
             cutoff = time.time() - (settings.audio_ttl_hours * 3600)
             for fname in os.listdir(settings.audio_dir):
                 fpath = os.path.join(settings.audio_dir, fname)
                 if os.path.isfile(fpath) and os.path.getmtime(fpath) < cutoff:
                     os.remove(fpath)
-                    logger.debug(f"Deleted old audio file: {fname}")
+                    logger.debug("Deleted old audio file: %s", fname)
         except Exception as e:
-            logger.warning(f"Audio cleanup error: {e}")
+            logger.warning("Audio cleanup error: %s", e)
+        await asyncio.sleep(3600)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs(settings.audio_dir, exist_ok=True)
     cleanup_task = asyncio.create_task(_audio_cleanup_loop())
     logger.info(f"Farm-AI BFF starting on port {settings.bff_port}")
     yield
