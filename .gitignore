@@ -1,0 +1,30 @@
+# Worktrees
+.worktrees/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+.env.local
+
+# Flutter/Dart
+.dart_tool/
+build/
+*.g.dart
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
