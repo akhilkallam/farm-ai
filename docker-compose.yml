@@ -102,6 +102,28 @@ services:
       interval: 30s
       retries: 3
 
+  # ── BFF (Backend for Frontend) ──────────────────────────────
+  bff:
+    build:
+      context: ./bff
+      dockerfile: Dockerfile
+    container_name: farmai-bff
+    ports:
+      - "8002:8002"
+    env_file: .env
+    environment:
+      - BACKEND_URL=http://api:8000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      retries: 3
+
   # ── Next.js Frontend ────────────────────────────────────────
   frontend:
     build:
