@@ -34,6 +34,7 @@ class Settings(BaseSettings):
     # Audio storage
     audio_dir: str = "/tmp/audio"
     audio_ttl_hours: int = 1
+    bff_base_url: str = "http://localhost:8002"
 
     # CORS
     cors_origins: str = "http://localhost:3000"

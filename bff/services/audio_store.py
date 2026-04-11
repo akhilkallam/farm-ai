@@ -1,6 +1,9 @@
+import logging
 import os
 import time
 import uuid
+
+logger = logging.getLogger(__name__)
 
 
 class AudioStore:
@@ -23,12 +26,15 @@ class AudioStore:
         for fname in os.listdir(self.audio_dir):
             fpath = os.path.join(self.audio_dir, fname)
             if os.path.isfile(fpath) and os.path.getmtime(fpath) < cutoff:
-                os.remove(fpath)
+                try:
+                    os.remove(fpath)
+                except OSError as e:
+                    logger.warning("Could not delete audio file %s: %s", fpath, e)
 
 
 def get_audio_store() -> AudioStore:
     from config import settings
     return AudioStore(
         audio_dir=settings.audio_dir,
-        base_url=f"http://localhost:{settings.bff_port}",
+        base_url=settings.bff_base_url,
     )
