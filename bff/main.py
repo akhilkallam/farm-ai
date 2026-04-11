@@ -11,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from config import settings
 from routers.auth import router as auth_router
 from routers.voice import router as voice_router
+from routers.sync import router as sync_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -55,6 +56,7 @@ app.mount("/audio", StaticFiles(directory=settings.audio_dir), name="audio")
 
 app.include_router(auth_router)
 app.include_router(voice_router)
+app.include_router(sync_router)
 
 
 @app.get("/health")
