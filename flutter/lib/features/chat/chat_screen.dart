@@ -302,18 +302,13 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: () {
-                if (_textController.text.trim().isNotEmpty) _sendText();
-              },
-              child: ElevatedButton(
-                onPressed: _textController.text.trim().isEmpty ? null : _sendText,
-                style: ElevatedButton.styleFrom(
-                  shape: const CircleBorder(),
-                  padding: const EdgeInsets.all(14),
-                ),
-                child: const Text('Send'),
+            ElevatedButton(
+              onPressed: _textController.text.trim().isEmpty ? null : _sendText,
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: const EdgeInsets.all(14),
               ),
+              child: const Text('Send'),
             ),
           ],
         ),

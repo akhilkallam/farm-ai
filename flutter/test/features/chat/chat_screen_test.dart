@@ -119,7 +119,8 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'Which crop?');
-    await tester.tap(find.text('Send'));
+    await tester.pump();
+    await tester.tap(find.byType(ElevatedButton));
     await tester.pumpAndSettle();
 
     verify(() => mockApi.textChat(
