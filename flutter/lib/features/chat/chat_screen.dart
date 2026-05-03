@@ -47,8 +47,11 @@ class _ChatScreenState extends State<ChatScreen> {
     _farmerId = await auth.getFarmerId();
     _isOnline = await connectivity.isOnline;
 
+    if (!mounted) return;
+
     if (_farmerId != null) {
       final stored = await db.getMessages(_farmerId!);
+      if (!mounted) return;
       setState(() {
         _messages = [_welcomeMessage(), ...stored];
       });

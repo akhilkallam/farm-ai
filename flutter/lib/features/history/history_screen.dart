@@ -25,11 +25,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final auth = context.read<AuthService>();
     final db = context.read<AppDatabase>();
     final farmerId = await auth.getFarmerId();
+    if (!mounted) return;
     if (farmerId == null) {
       setState(() => _loaded = true);
       return;
     }
     final msgs = await db.getMessages(farmerId, limit: 50);
+    if (!mounted) return;
     setState(() {
       _messages = msgs;
       _loaded = true;

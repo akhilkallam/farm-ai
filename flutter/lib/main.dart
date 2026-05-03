@@ -32,7 +32,10 @@ class FarmAIApp extends StatelessWidget {
         Provider<AppDatabase>.value(value: db),
         Provider<AuthService>.value(value: authService),
         Provider<ApiService>.value(value: apiService),
-        Provider<VoiceService>(create: (_) => VoiceService()),
+        Provider<VoiceService>(
+          create: (_) => VoiceService(),
+          dispose: (_, s) => s.dispose(),
+        ),
         Provider<ConnectivityWatcher>(create: (_) => ConnectivityWatcher()),
         Provider<SyncService>.value(value: syncService),
       ],
@@ -108,10 +111,14 @@ class _MainShellState extends State<_MainShell> {
   }
 
   Future<void> _triggerSync() async {
-    final sync = context.read<SyncService>();
-    final connectivity = context.read<ConnectivityWatcher>();
-    if (await connectivity.isOnline) {
-      await sync.flushQueue();
+    try {
+      final sync = context.read<SyncService>();
+      final connectivity = context.read<ConnectivityWatcher>();
+      if (await connectivity.isOnline) {
+        await sync.flushQueue();
+      }
+    } catch (_) {
+      // Sync errors are non-fatal — will retry on next launch
     }
   }
 
